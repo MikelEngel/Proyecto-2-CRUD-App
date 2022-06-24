@@ -23,3 +23,26 @@ btnCrear.addEventListener ('click', ()=>{
     opcion = 'crear'
 
 })
+
+//Función para mostrar
+
+const mostrar = (productos) => {
+    productos.forEach(prodcuto => {
+        resultados += 
+        `
+        <tr>
+            <td>${producto.modelo}</td>
+            <td>${producto.descripcion}</td>
+            <td>${producto.stock}</td>
+            <td>${producto.precio}</td>
+            <td class="text-center"><a class="btnEditar btn btn-primary">Editar</a><a class="btnBorrar btn btn-danger">Borrar</a></td>
+        </tr>
+        
+        `
+    });
+
+    contenedor.innerHTML = resultados
+    
+}
+
+
