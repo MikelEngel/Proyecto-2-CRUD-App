@@ -1,74 +1,105 @@
-let selectedRow = null
+let registros = [];
 
-function onFormSubmit(e) {
-	event.preventDefault();
-        var formData = readFormData();
-        if (selectedRow == null){
-            insertNewRecord(formData);
-		}
-        else{
-            updateRecord(formData);
-		}
-        resetForm();    
+const txtID = document.getElementById ("txtID");
+const txtModelo = document.getElementById ("txtModelo");
+const txtDescripcion = document.getElementById ("txtDescripcion");
+const txtCantidad = document.getElementById ("txtCantidad");
+const numPrecio = document.getElementById ("numPrecio");
+const proTabla = document.getElementById ("proTabla");
+
+const crearRegistro = () => {
+
+    const producto = {
+        id: uuidv4(),
+        modelo: txtModelo.value,
+        descripcion: txtDescripcion.value,
+        cantidad: txtCantidad.value,
+        precio: numPrecio.value,
+    };
+
+
+    registros = JSON.parse( localStorage.getItem("productos")) || [];
+    registros.push(producto);
+    localStorage.setItem("productos", JSON.stringify(registros));
+
+    mostrarRegistros();
+
+};
+
+const mostrarRegistros = () => {
+    const registrosProductos = JSON.parse(localStorage.getItem("productos")) || [];
+
+    proTabla.innerHTML = "";
+    registrosProductos.forEach((registroProducto) => {
+        const fila = `
+                <tr>
+                    <td>1</td>
+                    <td>${registroProducto.modelo}</td>
+                    <td>${registroProducto.descripcion}</td>
+                    <td>${registroProducto.cantidad}</td>
+                    <td>${registroProducto.precio}</td>
+                    <td><button type="button" class="btn btn-warning" onclick="iniciarEditarRegistro('${registroProducto.id}')">EDITAR</button></td>
+                    <td><button type="button" class="btn btn-danger" onclick="eliminarRegistro('${registroProducto.id}')">ELIMINAR</button></td>
+                  </tr>
+        `;
+
+    proTabla.innerHTML += fila;
+    
+    
+    });
+};
+
+
+const iniciarEditarRegistro = (idRegistro) => {
+
+    const registrosProductos = JSON.parse(localStorage.getItem("productos")) || [];
+    const producto = registrosProductos.find((registroProducto)=>{
+        return registroProducto.id === idRegistro;
+
+    });
+
+    txtID.value = idRegistro;
+    txtModelo.value = producto.modelo;
+    txtDescripcion.value = producto.descripcion;
+    txtCantidad.value = producto.cantidad;
+    numPrecio.value = producto.precio;
+
+};
+
+
+const editarRegistros = () => {
+    const registrosProductos = JSON.parse(localStorage.getItem("productos")) || [];
+    const producto = registrosProductos.find((registroProducto)=>{
+        return registroProducto.id === txtID.value;
+
+    });
+
+    producto.modelo = txtModelo.value;
+    producto.descripcion = txtDescripcion.value;
+    producto.cantidad = txtCantidad.value;
+    producto.precio = numPrecio.value;
+
+    localStorage.setItem("productos", JSON.stringify(registrosProductos));
+    mostrarRegistros();
 }
 
-//Recibir regsitros
-function readFormData() {
-    let formData = {};
-    formData["productCode"] = document.getElementById("productCode").value;
-    formData["product"] = document.getElementById("product").value;
-    formData["qty"] = document.getElementById("qty").value;
-    formData["perPrice"] = document.getElementById("perPrice").value;
-    return formData;
+const eliminarRegistro = (idRegistro) => {
+    const registrosProductos = JSON.parse(localStorage.getItem("productos")) || [];
+    const registrosFiltrados = registrosProductos.filter((registroProducto)=>{
+        return registroProducto.id !== idRegistro
 
+    })
+    localStorage.setItem("productos", JSON.stringify(registrosFiltrados));
+    mostrarRegistros();
+};
+
+
+function uuidv4() {
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    )  
 }
 
-//Capturar registros
-function insertNewRecord(data) {
-    var table = document.getElementById("storeList").getElementsByTagName('tbody')[0];
-    var newRow = table.insertRow(table.length);
-    cell1 = newRow.insertCell(0);
-		cell1.innerHTML = data.productCode;
-    cell2 = newRow.insertCell(1);
-		cell2.innerHTML = data.product;
-    cell3 = newRow.insertCell(2);
-		cell3.innerHTML = data.qty;
-    cell4 = newRow.insertCell(3);
-		cell4.innerHTML = data.perPrice;
-    cell4 = newRow.insertCell(4);
-        cell4.innerHTML = `<button class="btn btn-warning" onClick="onEdit(this)">Editar</button> <button class ="btn btn-danger" onClick="onDelete(this)">Borrar</button>`;
-}
-
-//Editar registros
-function onEdit(td) {
-    selectedRow = td.parentElement.parentElement;
-    document.getElementById("productCode").value = selectedRow.cells[0].innerHTML;
-    document.getElementById("product").value = selectedRow.cells[1].innerHTML;
-    document.getElementById("qty").value = selectedRow.cells[2].innerHTML;
-    document.getElementById("perPrice").value = selectedRow.cells[3].innerHTML;
-}
-function updateRecord(formData) {
-    selectedRow.cells[0].innerHTML = formData.productCode;
-    selectedRow.cells[1].innerHTML = formData.product;
-    selectedRow.cells[2].innerHTML = formData.qty;
-    selectedRow.cells[3].innerHTML = formData.perPrice;
-}
-
-//Eliminar Registos
-function onDelete(td) {
-    if (confirm('Esta seguro de eliminar este producto')) {
-        row = td.parentElement.parentElement;
-        document.getElementById('storeList').deleteRow(row.rowIndex);
-        resetForm();
-    }
-}
-
-//Limpiar Form
-function resetForm() {
-    document.getElementById("productCode").value = '';
-    document.getElementById("product").value = '';
-    document.getElementById("qty").value = '';
-    document.getElementById("perPrice").value = '';
-    selectedRow = null;
-}
-
+window.onload = () => {
+    mostrarRegistros();
+};
